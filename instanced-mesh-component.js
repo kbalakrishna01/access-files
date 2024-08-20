@@ -82,17 +82,14 @@ AFRAME.registerComponent('instanced-mesh', {
     },
 
     update: function () {
-
         // set configured positioning mode
         switch (this.data.positioning) {
             case "local":
                 this.localPositioning = true;
                 break;
-
             case "world":
                 this.localPositioning = false;
                 break;
-
             default:
                 console.log(`Unexpected value for 'positioning' attribute: ${this.data.positioning}`);
                 console.log(`Defaulting to "local" positioning`);
@@ -104,15 +101,9 @@ AFRAME.registerComponent('instanced-mesh', {
         this.autoMode = (this.data.updateMode === "auto")
 
         // Possible we are waiting for a GLTF model to load.  If so, defer processing...
-        // !! We have a bug where using a geometry where that is specified on the
-        // object *after* instanced-mesh.  This component gets initialized first but there
-        // is no "model-loaded" event.  What's the equivalent?
-        // For now, solution is to always specify instanced-mesh *after* geometry.
         var previousMesh = this.el.getObject3D('mesh')
         if (!previousMesh) {
-            this.el.addEventListener('model-loaded', e => {
-                this.update.call(this, this.data)
-            })
+            this.el.addEventListener('model-loaded', e => {… })
             return;
         }
 
@@ -567,17 +558,16 @@ AFRAME.registerComponent('instanced-mesh', {
     // matrices to match the transform of the member object
     // (provided in the object3D)
     updateMatricesFromMemberObject(object3D, index) {
-
         const matrix = this.matrixFromMemberObject(object3D);
 
         // don't output console logs for matrix updates in auto mode - too verbose.
-        const debug = (this.debug && !this.autoMode)
+        const debug = (this.debug && !this.autoMode);
         const componentMatrix = this.componentMatrix;
         this.instancedMeshes.forEach((mesh, componentIndex) => {
 
             if (debug) {
                 //console.log(`Modifying member ${id} at position ${index}`);
-                console.log(`Setting matrix for component index ${componentIndex}`)
+                console.log(`Setting matrix for component index ${componentIndex}`);
 
                 mesh.getMatrixAt(index, this.debugMatrix);
 
@@ -591,17 +581,17 @@ AFRAME.registerComponent('instanced-mesh', {
             componentMatrix.multiplyMatrices(matrix, this.componentMatrices[componentIndex]);
             mesh.setMatrixAt(index, componentMatrix);
 
-            const gotColor = this.getColorForComponent(object3D, componentIndex, this.color)
+            const gotColor = this.getColorForComponent(object3D, componentIndex, this.color);
             if (gotColor) {
 
                 // Prior to A-Frame 1.5.0, must call applyColorCorrection to cover case where
-                // colorManagement s set to true.
+                // colorManagement is set to true.
                 // Should not be required after 1.5.0 due to A-Frame PR 5210.
                 // https://github.com/aframevr/aframe/pull/5210
-                const renderer = this.el.sceneEl.systems.renderer
-                renderer.applyColorCorrection(this.color)
+                const renderer = this.el.sceneEl.systems.renderer;
+                renderer.applyColorCorrection(this.color);
 
-                mesh.setColorAt(index, this.color)
+                mesh.setColorAt(index, this.color);
                 mesh.instanceColor.needsUpdate = true;
             }
 
@@ -792,36 +782,36 @@ AFRAME.registerComponent('instanced-mesh', {
     // - (TO DO) manual update mode, update those 
     // Because this is called via scene.onBeforeRender(), all object3D matrices can be assumed
     // to be up-to-date.
-    prerender() {
-
+    prerender: function () {
         if (!this.autoMode && this.membersToUpdate.size === 0) return;
 
-        // update this.parentWorldMatrixInverse, which will be used in matrix calculations.
-        const parent = this.el.object3D.parent
-        const parentInverse = this.parentWorldMatrixInverse
-        parentInverse.copy(parent.matrixWorld)
-        parentInverse.invert()
+        // Update this.parentWorldMatrixInverse, which will be used in matrix calculations.
+        const parent = this.el.object3D.parent;
+        const parentInverse = this.parentWorldMatrixInverse;
+        parentInverse.copy(parent.matrixWorld);
+        parentInverse.invert();
 
         if (this.autoMode) {
-            const list = this.orderedMembersList
-            const members = this.members
-            for (let ii = 0; ii < members; ii++) {
-                const object = list[ii].object3D
+            const list = this.orderedMembersList;
 
-                if (object) {
-                    this.updateMatricesFromMemberObject(object, ii);
+            list.forEach((member, index) => {
+                const animation = member.components['instanced-mesh-member'].animation;
+                if (animation) {
+                    // Apply animation logic here
+                    // Example: simple scale animation
+                    const elapsedTime = performance.now() - member.startTime;
+                    const duration = 6000;  // Duration in milliseconds
+                    const progress = Math.min(elapsedTime / duration, 1);
+                    const scale = 1 + (5 * progress);  // Scale from 1 to 6
+
+                    // Update scale based on animation
+                    member.object3D.scale.set(scale, scale, scale);
+
+                    // Update matrix
+                    member.object3D.updateMatrix();
+                    this.updateMatricesFromMemberObject(member.object3D, index);
                 }
-            };
-        }
-        else {
-            this.membersToUpdate.forEach((member) => {
-                const index = this.orderedMembersList.findIndex(x => (x === member));
-                if (index == -1) {
-                    console.error(`Member ${member.id} not found for modification`)
-                }
-                this.updateMatricesFromMemberObject(member.object3D, index);
-            })
-            this.membersToUpdate.clear()
+            });
         }
     },
 
@@ -863,6 +853,7 @@ AFRAME.registerComponent('instanced-mesh-member', {
         this.visible = this.el.object3D.visible;
         this.colors = this.data.colors;
         this.animation = this.data.animation;  // Store animation parameter
+        this.startTime = performance.now();  // Store start time for animation
     },
 
     update: function () {
