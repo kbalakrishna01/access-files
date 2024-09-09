@@ -3291,6 +3291,8 @@ AFRAME.registerComponent("post-processing", {
     this.renderer = this.el.renderer;
     this.camera = this.el.camera;
 
+    
+
     // Individual effects
     if (this.data.effect === "sketchy-pencil") {
       this.composer = new EffectComposer(this.renderer);
@@ -3370,8 +3372,7 @@ AFRAME.registerComponent("post-processing", {
       this.composer.addPass(effectSobel);
     } else if (this.data.effect === "bloom") {
       this.composer = new EffectComposer(this.renderer);
-      const renderScene = new RenderPass(this.scene, this.camera);
-      this.composer.addPass(renderScene);
+      this.composer.addPass(new RenderPass(this.scene, this.camera));
       const bloomPass = new UnrealBloomPass(
         new THREE.Vector2(
           this.renderer.domElement.clientWidth,
@@ -3381,15 +3382,8 @@ AFRAME.registerComponent("post-processing", {
         0.4,
         0.85
       );
-      const params = getParams(this.data.bloomParams);
-      bloomPass.threshold = params.threshold;
-      bloomPass.strength = params.strength;
-      bloomPass.radius = params.radius;
       this.composer.addPass(bloomPass);
-
-      const outputPass = new OutputPass(THREE.ReinhardToneMapping);
-      outputPass.toneMappingExposure = params.exposure;
-      this.composer.addPass(outputPass);
+      this.composer.addPass(new ShaderPass(GammaCorrectionShader));
     } else if (this.data.effect === "dot-screen") {
       this.composer = new EffectComposer(this.renderer);
 
