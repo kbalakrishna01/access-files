@@ -115,7 +115,7 @@ class FullScreenQuad {
 		// https://github.com/mrdoob/three.js/pull/18846
 		const xrEnabled = renderer.xr.enabled;
 
-		renderer.xr.enabled = false;
+		renderer.xr.enabled = true;
 		renderer.render( this._mesh, _camera );
 		renderer.xr.enabled = xrEnabled;
 
