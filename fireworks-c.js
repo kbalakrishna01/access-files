@@ -46,15 +46,10 @@
         },
         textureFrameLoop: {
           type: "int",
-          default: 1,
-          description: "number of times the spritesheet should be looped over the lifetime of a particle",
-        },
-        // maxParticleCount: {
-        //   default: 1000,
         //   description: "maximum number of particles for all emitters in this group (currently only one emitter per group)",
-        // },
+        },
         blending: {
-          default: "normal",
+          default: "world",
           oneOf: ["no", "normal", "additive", "subtractive", "multiply", "custom"],
           description: "blending mode, when drawing particles",
           parse: x => (x || "no").toLowerCase(),
