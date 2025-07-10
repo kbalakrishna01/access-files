@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="instanced-mesh-component.js"></script>
+</head>
+
+<body>
+    <a-scene>
+        <a-assets>
+            <!-- Your GLTF model with animations -->
+            <a-gltf-model id="animated-model" src="path/to/your/animated-model.glb"></a-gltf-model>
+        </a-assets>
+
+        <!-- Instanced mesh with animation mixer support enabled -->
+        <a-entity id="instanced-mesh" gltf-model="#animated-model" instanced-mesh="
+                capacity: 50; 
+                enableAnimationMixers: true; 
+                updateMode: auto;
+                debug: true
+            ">
+        </a-entity>
+
+        <!-- Individual mesh members with animation support -->
+        <a-entity position="0 0 0" instanced-mesh-member="
+                mesh: #instanced-mesh;
+                animationClips: walk, run, idle;
+                autoPlay: idle;
+                loop: true;
+                timeScale: 1.0;
+                debug: true
+            ">
+        </a-entity>
+
+        <a-entity position="2 0 0" instanced-mesh-member="
+                mesh: #instanced-mesh;
+                animationClips: walk, run, idle;
+                autoPlay: walk;
+                loop: true;
+                timeScale: 1.5;
+                debug: true
+            ">
+        </a-entity>
+
+        <a-entity position="-2 0 0" instanced-mesh-member="
+                mesh: #instanced-mesh;
+                animationClips: walk, run, idle;
+                autoPlay: run;
+                loop: true;
+                timeScale: 2.0;
+                debug: true
+            ">
+        </a-entity>
+
+        <!-- Camera and lighting -->
+        <a-camera position="0 2 5"></a-camera>
+        <a-light type="ambient" color="white" intensity="0.5"></a-light>
+        <a-light type="directional" position="0 5 0" intensity="0.5"></a-light>
+    </a-scene>
+
+    <script>
+        // Example of controlling animations programmatically
+        document.addEventListener('DOMContentLoaded', function () {
+            const members = document.querySelectorAll('[instanced-mesh-member]');
+
+            // Example: Change animations after 3 seconds
+            setTimeout(() => {
+                members.forEach((member, index) => {
+                    const component = member.components['instanced-mesh-member'];
+                    if (component) {
+                        // Stop current animation and play a different one
+                        component.stopAnimation();
+
+                        const animations = ['walk', 'run', 'idle'];
+                        const randomAnim = animations[Math.floor(Math.random() * animations.length)];
+
+                        component.playAnimation(randomAnim, {
+                            timeScale: 0.5 + Math.random(), // Random speed
+                            loop: THREE.LoopRepeat
+                        });
+                    }
+                });
+            }, 3000);
+        });
+    </script>
+</body>
+
+</html>
